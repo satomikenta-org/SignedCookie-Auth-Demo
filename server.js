@@ -16,25 +16,27 @@ const cookieOptions = {
 app.use(cors());
 app.use(cookieParser('SUPER_SECRET_FROM_ENV'));
 
-// if user is active, then extends cookie expiracy.
 const customAuthMiddleware = (req, res, next) => { 
   if (req.signedCookies.user) {
-    const user = req.signedCookies.user;
-    res.cookie('user', user, cookieOptions);
-    next();
-  } else {
-    res.sendStatus(403);
-  }
+    // check the expiracy of cookie
+    if (req.signedCookies.user.exp > new Date().getTime()) {
+     return next();
+    }
+    console.log("expired");
+  } 
+  res.sendStatus(403);
 };
 
 app.get('/login', (req,res) => {
-  const user = "satomi@gmail.com";
-  res.cookie('user', user, cookieOptions);
+  const userInfo = {
+    id: "sato@gmail.com",
+    exp: new Date().getTime() + 60 * 60 * 24 * 1000 
+  };
+  res.cookie('user', userInfo, cookieOptions);
   res.send('Success');
 })
 
 app.get('/logout', (req, res) => {
-  console.log(cluster.worker.id);
   if (req.signedCookies.user) {
     res.clearCookie('user');
     res.send('LOGOUT SUCCESS')
@@ -45,7 +47,6 @@ app.get('/logout', (req, res) => {
 
 app.use(customAuthMiddleware);
 app.get('/private', (req, res) => {
-  console.log(cluster.worker.id);
   res.send(`You are authenticated: ${req.signedCookies.user}`);
 });
 
