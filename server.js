@@ -9,8 +9,8 @@ const cookieOptions = {
   httpOnly: true, 
   signed: true, 
   maxAge: 60 * 60 * 24 * 1000, // expiracy: 24hours
-  // domain: 'http://mydomain.com',
   // secure: true 
+  // sameSite: true  // for CSRF 
 };
 
 app.use(cors());
